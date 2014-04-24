@@ -1,0 +1,238 @@
+#!/usr/bin/php
+<?php
+/**
+ * TinyMVC CLI
+ * 
+ * @author Ralfe Poisson <ralfepoisson@gmail.com>
+ * @license GPLv3
+ */
+
+while (true) {
+	// Display the menu
+	print_menu();
+	
+	// Read selection
+	$selection = readline();
+	
+	// React to selection
+	handle_menu_selection($selection);
+}
+
+function print_menu() {
+	output (" TinyMVC CLI");
+	output (" 1) Create new App");
+	output (" 2) Repair App");
+	output (" 3) Create Database");
+	output (" 4) Update Database");
+	output (" 0) Exit");
+	output ("");
+	output (" Selection: ");
+}
+
+function handle_menu_selection($option) {
+	switch($option) {
+		case "1":
+			// Create a new App
+			create_new_app();
+			break;
+		case "2":
+			// Repare App
+			break;
+		case "3":
+			// Create Database
+			create_app_database();
+			break;
+		case "4":
+			// Update Database
+			break;
+		case "0":
+			die();
+			break;
+		default:
+			output ("Please enter a valid option.");
+	}
+}
+
+function output($message) {
+	print $message . "\n";
+}
+
+function readline() {
+	// Open Standard Input for Reading
+	$f = fopen("php://stdin", 'r');
+	
+	// Read Keyboard Input
+	$line = fgets($f, 1024);
+	
+	// Close Standard Input
+	fclose($f);
+	
+	// Return the read line
+	return trim($line);
+}
+
+function get_input($question, $default) {
+	// Construct the output
+	$output = $question . " [{$default}] : ";
+	
+	// Display the output
+	print $output;
+	
+	// Read the input
+	$input = trim(readline());
+	
+	// Return the result
+	return (strlen($input))? $input : $default;
+}
+
+function get_command_output($command) {
+	// Local Variables
+	$output = "";
+	
+	// Open stream to process
+	$p = popen($command, 'r');
+	
+	// Read command output
+	while ($line = fgets($p, 1024)) {
+		$output .= $line;
+	}
+	
+	// Close stream
+	pclose($p);
+	
+	// Return Output
+	return trim($output);
+}
+
+function create_new_app() {
+	// output (Heading
+	output (" Create a new TinyMVC Application");
+	output (" --------------------------------------------");
+	
+	// Get Web Root
+	$web_root = get_input(" Please enter the location of the web root", "/var/www/");
+	
+	// Get App directory
+	$app_dir = get_input(" Please enter a folder name for the application", "myapp");
+	
+	// Inform the user that we are Processing the request
+	output (" [*] Processing ...");
+	
+	// Create Directory structure
+	output (" - Creating Directory Structure");
+	$base = $web_root . $app_dir . "/";
+	mkdir($base);
+	mkdir($base . "controllers/");
+	mkdir($base . "helpers/");
+	mkdir($base . "models/");
+	mkdir($base . "views/");
+	mkdir($base . "views/home");
+	
+	// Copy templates
+	output (" - Copying files");
+	$templates = dirname(dirname(__FILE__)) . "/templates/";
+	copy($templates . "config.sample.php", $base . "config.php");
+	copy($templates . "index.sample.php", $base . "index.php");
+	copy($templates . "login.sample.php", $base . "login.php");
+	copy($templates . "routes.sample.php", $base . "routes.php");
+	copy($templates . "index.sample.html", $base . "views/index.html");
+	copy($templates . "default.sample.html", $base . "views/home/default.html");
+	copy($templates . "user.class.sample.php", $base . "models/user.class.php");
+	copy($templates . "home.sample.php", $base . "controllers/home.php");
+	
+	// Done
+	output (" - Done.\n");
+}
+
+function create_app_database() {
+	// output (Heading
+	output (" Create database for MVC Application");
+	output (" --------------------------------------------");
+	
+	// Get App directory
+	$app_dir = get_input(" Please enter the absolute path to the application", "/var/www/myapp/");
+	
+	// Load Application Configuration
+	include($app_dir . "config.php");
+	
+	// Get Privileged User Credentials for the Database Server
+	$super_user = get_input(" Administrator username on database server {$configuration->db_host}: ", "root");
+	$super_pass = get_input(" Administrator password on database server {$configuration->db_host}: ", "secret");
+	
+	// Create DB object
+	output(" - Connecting to database server with privileged credentials.");
+	require_once(dirname(dirname(__FILE__)) . "/framework/classes/db_engine.class.php");
+	$_db = new db_engine(	$configuration->db_host,
+							$super_user,
+							$super_pass,
+							null,
+							true
+						);
+	
+	// Create Database
+	output(" - Creating database '{$configuration->db_db}'.");
+	$_db->create_database($configuration->db_db);
+	
+	// Creating Login Account
+	output(" - Creating login account '{$configuration->db_user}'.");
+	$host = ($configuration->db_host == "localhost" || $configuration->db_host == "127.0.0.1")? "localhost" : "%";
+	$_db->create_user($configuration->db_db, $configuration->db_user, $configuration->db_pass, $host);
+	
+	// Use Database
+	output(" - Use `{$configuration->db_db}`");
+	$_db = new db_engine(	$configuration->db_host,
+							$super_user,
+							$super_pass,
+							$configuration->db_db,
+							true
+						);
+	
+	// Retrieving Models
+	output(" - Retrieving list of models to create tables for...");
+	$list = get_command_output("ls {$app_dir}models/*.class.php");
+	
+	// Process models
+	$models = explode("\n", $list);
+	output(" - Found " . sizeof($models) . " models. Processing ...");
+	foreach ($models as $model) {
+		// Get Model Name
+		$model_name = basename($model, ".class.php");
+		output("  > * Model: " . $model_name);
+		
+		// Get Attributes
+		$attributes = explode("\n", get_command_output("grep -h public\ \\\\\$ {$model}"));
+		output("    : Found " . sizeof($attributes) . " attributes.");
+		
+		// Define standard Model Attributes
+		$params = array(
+			"uid" => "PRIMARY KEY",
+			"creation_date" => "Datetime",
+			"created_by" => "Integer[11]",
+			"active" => "Boolean"
+		);
+		
+		// Process Atrributes
+		foreach ($attributes as $attr) {
+			// Extract name
+			$pos = strpos($attr, "$") + 1;
+			$attrib_name = substr($attr, $pos, strpos($attr, ";", $pos) - $pos);
+			
+			// Get Type
+			$pos = strpos($attr, "(", strpos($attr, ";")) + 1;
+			$attrib_type = substr($attr, $pos, strpos($attr, ")", $pos) - $pos);
+			
+			// Add name and type to the parameters array
+			output("    : '{$attrib_name}' ({$attrib_type})");
+			$params[$attrib_name] = $attrib_type;
+		}
+		
+		// Create table
+		output("  > Creating table `{$model_name}`.");
+		$_db->create_table($model_name, $params);
+		output("  > Done.");
+	}
+	
+	// Done
+	output(" [*] Done.\n");
+}
+
