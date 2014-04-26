@@ -462,8 +462,8 @@ class db_engine {
 	private function generate_field_definition($name, $type) {
 		// Local Variables
 		$query = "";
-		$data_type = (strstr($type, "["))? trim(substr($type, strpos($type, "["))) : $type;
-		$length = (strstr($type, "["))? substr($type, strpos($type, "["), strpos($type, "]") - strpos($type, "[")) : 0;
+		$data_type = (strstr($type, "["))? trim(substr($type, 0, strpos($type, "["))) : $type;
+		$length = (strstr($type, "["))? substr($type, strpos($type, "[") + 1, strpos($type, "]") - strpos($type, "[") - 1) : 0;
 		
 		// Handle Types
 		switch($type) {

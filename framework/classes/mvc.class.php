@@ -55,6 +55,22 @@ class MVC {
 		return $MVC;
 	}
 	
+	public static function headless_start() {
+		// Log Activity
+		MVC::log(" [*] MVC Starting...");
+		
+		// Store latest page request
+		$_SESSION['accessing_page'] = $_SERVER['REQUEST_URI'];
+		
+		// Get Singleton
+		$mvc = MVC::Factory();
+		
+		// Create Application Object
+		MVC::log(" - Creating Application", 8);
+		$mvc->App = Application::Factory($mvc->AppConfig);
+		
+	}
+	
 	public static function start() {
 		// Log Activity
 		MVC::log(" [*] MVC Starting...");
