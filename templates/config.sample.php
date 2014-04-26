@@ -11,7 +11,7 @@
  */
 
 // We will store the configuration inside an object which we will pass to tinyMVC
-$configuration = new Object();
+$configuration = (object)array();
 
 /**
  * log_file
