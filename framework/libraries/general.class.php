@@ -97,5 +97,10 @@ class GeneralFunctions {
 		return $str;
 	}
 	
+	public static function format_mysql_date($date) {
+		$time = strtotime($date);
+		return date("Y-m-d", $time);
+	}
+	
 }
 

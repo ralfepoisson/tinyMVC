@@ -6,9 +6,6 @@ global $DB;
 class DB {
 	
 	public static function create() {
-		// Log Activity
-		MVC::log(" - Constructing new database engine.", 8);
-		
 		// Database Engine
 		$db = new db_engine(	MVC::config('db_host'),
 								MVC::config('db_user'),
@@ -27,9 +24,6 @@ class DB {
 	public static function Factory($engine="mysql") {
 		// Global Variables
 		global $DB;
-		
-		// Log Activity
-		MVC::log(" [*] DB Factory: {$engine}", 8);
 		
 		// Check for singleton
 		if (is_object($DB)) {

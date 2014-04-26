@@ -117,5 +117,14 @@ class MVC {
 		return $mvc->General;
 	}
 	
+	public static function Redirect($controller, $action, $params) {
+		// Compile URL
+		$url = "?p=" . $controller . "&action=" . $action . $params;
+		
+		// Redirect
+		print "<script>window.location.href = '{$url}';</script>"; 
+		die();
+	}
+	
 }
 

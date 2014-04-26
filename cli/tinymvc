@@ -24,9 +24,10 @@ function print_menu() {
 	output (" 2) Repair App");
 	output (" 3) Create Database");
 	output (" 4) Update Database");
+	output (" 5) Recreate Database");
 	output (" 0) Exit");
 	output ("");
-	output (" Selection: ");
+	print " Selection: ";
 }
 
 function handle_menu_selection($option) {
@@ -44,6 +45,10 @@ function handle_menu_selection($option) {
 			break;
 		case "4":
 			// Update Database
+			break;
+		case "5":
+			// Recreate Database
+			recreate_database();
 			break;
 		case "0":
 			die();
@@ -121,7 +126,9 @@ function create_new_app() {
 	// Create Directory structure
 	output (" - Creating Directory Structure");
 	$base = $web_root . $app_dir . "/";
-	mkdir($base);
+	if (!file_exists($base)) {
+		mkdir($base);
+	}
 	mkdir($base . "controllers/");
 	mkdir($base . "helpers/");
 	mkdir($base . "models/");
@@ -187,6 +194,68 @@ function create_app_database() {
 							true
 						);
 	
+	// Create Database
+	create_database_from_models($_db, $app_dir, $configuration);
+	
+	// Done
+	output(" [*] Done.\n");
+}
+
+function recreate_database() {
+	// output (Heading
+	output (" Re-create database for MVC Application");
+	output (" --------------------------------------------");
+	
+	// Get App directory
+	$app_dir = get_input(" Please enter the absolute path to the application", "/var/www/myapp/");
+	
+	// Load Application Configuration
+	include($app_dir . "config.php");
+	
+	// Get Privileged User Credentials for the Database Server
+	$super_user = get_input(" Administrator username on database server {$configuration->db_host}: ", "root");
+	$super_pass = get_input(" Administrator password on database server {$configuration->db_host}: ", "secret");
+	
+	// Create DB object
+	output(" - Connecting to database server with privileged credentials.");
+	require_once(dirname(dirname(__FILE__)) . "/framework/classes/db_engine.class.php");
+	$_db = new db_engine(	$configuration->db_host,
+							$super_user,
+							$super_pass,
+							null,
+							true
+						);
+	
+	// Drop Database
+	output(" - Dropping database '{$configuration->db_db}'.");
+	$_db->query("DROP DATABASE IF EXISTS `{$configuration->db_db}`");
+	
+	// Create Database
+	output(" - Creating database '{$configuration->db_db}'.");
+	$_db->create_database($configuration->db_db);
+	
+	// Creating Login Account
+	output(" - Creating login account '{$configuration->db_user}'.");
+	$host = ($configuration->db_host == "localhost" || $configuration->db_host == "127.0.0.1")? "localhost" : "%";
+	$_db->create_user($configuration->db_db, $configuration->db_user, $configuration->db_pass, $host);
+	
+	// Use Database
+	output(" - Use `{$configuration->db_db}`");
+	$_db = new db_engine(	$configuration->db_host,
+							$super_user,
+							$super_pass,
+							$configuration->db_db,
+							true
+						);
+	
+	// Create Database
+	create_database_from_models($_db, $app_dir, $configuration);
+	
+	// Done
+	output(" [*] Done.\n");
+}
+
+function create_database_from_models($_db, $app_dir, $configuration) {	
 	// Retrieving Models
 	output(" - Retrieving list of models to create tables for...");
 	$list = get_command_output("ls {$app_dir}models/*.class.php");
@@ -198,6 +267,15 @@ function create_app_database() {
 		// Get Model Name
 		$model_name = basename($model, ".class.php");
 		output("  > * Model: " . $model_name);
+		
+		// Get Class Name
+		$class_name = get_command_output("grep class\ .*\ extends\ Model $model | awk -F\" \" ' { print $2; } '");
+		output("    : Class Name = " . $class_name);
+		
+		// Ensure this is a valid model
+		if (!strlen(trim($class_name))) {
+			continue;
+		}
 		
 		// Get Attributes
 		$attributes = explode("\n", get_command_output("grep -h public\ \\\\\$ {$model}"));
@@ -227,12 +305,8 @@ function create_app_database() {
 		}
 		
 		// Create table
-		output("  > Creating table `{$model_name}`.");
-		$_db->create_table($model_name, $params);
+		output("  > Creating table `{$class_name}`.");
+		$_db->create_table($class_name, $params);
 		output("  > Done.");
 	}
-	
-	// Done
-	output(" [*] Done.\n");
 }
-

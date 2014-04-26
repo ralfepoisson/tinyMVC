@@ -241,6 +241,8 @@ class db_engine {
 			# Display Detailed Error Message if Debug is on
 			if ($this->debug) {
 					$error_message = str_replace("\t", "    ", $error_message);
+					//$error_message = str_replace(" ", "&nbsp;", $error_message);
+					//$error_message = str_replace("\n", "<br>", $error_message);
 					print $error_message;
 			}
 			die();
