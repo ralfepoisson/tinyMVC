@@ -62,3 +62,21 @@ $configuration->db_db = "myapp";
  */
 $configuration->debug = true;
 
+/**
+ * default_page
+ * The default controller to load when one is not specified explicitly.
+ */
+$configuration->default_page = "home";
+
+/**
+ * default_action
+ * The default action to call on the controller when one is not specified explicitly.
+ */
+$configuration->default_action = "display";
+
+/**
+ * template
+ * This is the file location within the views/ directory which is to be used as the default page template.
+ */
+$configuration->template = "index.html";
+

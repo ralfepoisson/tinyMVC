@@ -4,6 +4,11 @@ function get_user_uid() {
 	return (isset($_SESSION['user_id']))? $_SESSION['user_id'] : 0;
 }
 
+function user_get_name() {
+	$user = new User(get_user_uid());
+	return $user->username;
+}
+
 function now() {
 	return date("Y-m-d H:i:s");
 }

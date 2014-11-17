@@ -102,5 +102,61 @@ class GeneralFunctions {
 		return date("Y-m-d", $time);
 	}
 	
+	public static function generate_select($name, $values, $active="", $use_key=1, $custom_tags="") {
+		# Construct HTML
+		$html = "<select name=\"{$name}\" id=\"{$name}\" {$custom_tags}>\n";
+		$html .= "	<option value='0'>Select One</option>\n";
+		foreach ($values as $key => $value) {
+			$key = ($use_key)? $key : $value;
+			$checked = ($key == $active)? " SELECTED" : "";
+			$html .= "	<option value='$key'{$checked}>$value</option>\n";
+		}
+		$html .= "</select>\n";
+	
+		# Return HTML
+		return $html;
+	}
+		
+	public static function generate_select_values($table, $id_field, $name_field, $where="", $order_by="") {
+		# Global Variables
+		global $_db;
+	
+		# Get Data
+		$where_clauses = (strlen(trim($where)))? filter_clauses($where) : "";
+		$order_by = (strlen($order_by))? "ORDER BY {$order_by} " : "";
+		$query = "	SELECT
+						`{$id_field}` as 'id',
+						`{$name_field}` as 'name'
+					FROM
+						`{$table}`
+					WHERE
+						`active` = 1
+						{$where_clauses}
+					{$order_by}
+					";
+		$data = MVC::DB()->fetch($query);
+	
+		# Generate Values
+		$values = array();
+		foreach ($data as $item) {
+			$values[$item->id] = $item->name;
+		}
+	
+		# Return Values
+		return $values;
+	}
+	
+	public static function select_box($name, $table, $id_field, $name_field, $default=0, $where="", $order_by="") {
+		// Create Values
+		$values = GeneralFunctions::generate_select_values($table, $id_field, $name_field, $where, $order_by);
+		
+		// Create Select Box
+		$html = GeneralFunctions::generate_select($name, $values, $default);
+		MVC::log(print_r($html, 1));
+		
+		// Return Select Box
+		return $html;
+	}
+	
 }
 
