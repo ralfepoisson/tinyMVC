@@ -21,6 +21,7 @@ class Model {
 	var $fields;
 	var $uid;
 	var $uid_field;
+	var $default_uid_field = "id";
 	
 	// --------------------------------------------------------------------------------------
 	// METHODS
@@ -36,7 +37,7 @@ class Model {
 		$this->table = get_called_class();
 		$this->fields = array();
 		$this->uid = $uid;
-		$this->uid_field = "uid";
+		$this->uid_field = $this->default_uid_field;
 		
 		// Load
 		if ($this->uid) {
@@ -54,16 +55,17 @@ class Model {
 		global $_db;
 		
 		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
+		$id_field = $this->uid_field;
 		
 		// Check if Object exists in Database
-		if ($this->uid && $this->table) {
+		if ($this->$id_field && $this->table) {
 			$query = "	SELECT
 							COUNT(*)
 						FROM
 							`{$this->table}`
 						WHERE
-							`{$this->uid_field}` = '{$this->uid}'
+							`{$this->uid_field}` = '{$this->$id_field}'
 						";
 			$exists = MVC::DB()->fetch_single($query);
 			
@@ -87,7 +89,8 @@ class Model {
 		global $_db;
 		
 		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
+		$id_field = $this->uid_field;
 		
 		// Load Attributes
 		$this->get_attributes();
@@ -100,7 +103,7 @@ class Model {
 						FROM
 							`{$this->table}`
 						WHERE
-							`{$this->uid_field}` = '{$this->uid}'
+							`{$this->uid_field}` = '{$this->$id_field}'
 						";
 			$data = MVC::DB()->fetch_one($query);
 			
@@ -117,7 +120,7 @@ class Model {
 		global $_db;
 		
 		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
 		
 		// Get Attributes from Database Table
 		if ($this->table) {
@@ -145,7 +148,7 @@ class Model {
 		global $_db;
 		
 		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
 		
 		// Get Attributes
 		$this->get_attributes();
@@ -153,18 +156,19 @@ class Model {
 		// Construct Associative array to pass to database object
 		$data = array();
 		foreach ($this->fields as $field) {
-			if (!($field == "uid")) {
+			if (!($field == $this->uid_field)) {
 				$data[$field] = $this->$field;
 			}
 		}
 		
 		// If object exists in database, update it
 		if ($this->exists()) {
+			$id_field = $this->uid_field;
 			MVC::DB()->update(
 				$this->table,
 				$data,
 				array(
-					"{$this->uid_field}" => $this->uid
+					$this->uid_field => $this->$id_field
 				)
 			);
 		}
@@ -173,8 +177,6 @@ class Model {
 		else if ($this->table) {
 			// Set Default Attributes
 			$data["creation_date"] = now();
-			$data["created_by"] = get_user_uid();
-			$data["active"] = 1;
 			
 			// Insert Record
 			$this->uid = MVC::DB()->insert(
@@ -187,35 +189,28 @@ class Model {
 	/**
 	 * Disables the row in the table by setting the active field to 0
 	 */
-	function delete() {
+	public function delete() {
 		// Global Variables
 		global $_db;
 		
 		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
 		
 		// Disable
 		$MVC::DB()->disable($this->table, $this->uid);
 	}
 	
-	public function get($filters="") {
+	public function deactivate() {
+		$this->deactivation_date = date("Y-m-d H:i:s");
+		$this->save();
+	}
+	
+	public function get($filters="", $order="", $order_direction="ASC") {
 		// Global Variables
 		global $_db;
 		
-		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
-		
-		// Generate Where Conditions from Filters
-		$conditions = $this->filter_clauses($filters);
-		
 		// Get Data
-		$query = "	SELECT
-						`{$this->uid_field}`
-					FROM
-						`{$this->table}`
-					WHERE
-						{$conditions}
-					";
+		$query = $this->prepare_filtered_query($filters, $order, $order_direction);
 		$data = MVC::DB()->fetch($query);
 		
 		// Generate array of objects
@@ -223,7 +218,9 @@ class Model {
 		$class = get_class($this);
 		foreach ($data as $item) {
 			$obj_class = new ReflectionClass($class);
-			$obj = $obj_class->newInstanceArgs(array($item->uid));
+			$id_field = $this->uid_field;
+			$args = array($item->$id_field);
+			$obj = $obj_class->newInstanceArgs($args);
 			$objects[] = $obj;
 		}
 		
@@ -231,12 +228,49 @@ class Model {
 		return $objects;
 	}
 	
+	public function prepare_filtered_query($filters=null, $order=null, $order_direction="ASC", $fields=null) {
+		// Confirm UID Field
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
+		$order = ($order)? $order : $this->uid_field;
+		
+		// Generate Where Conditions from Filters
+		$conditions = $this->filter_clauses($filters);
+		
+		// Determine Fields to Select
+		if ($fields == null) {
+			$fields = "`{$this->uid_field}`";
+		}
+		else {
+			$field_list = "";
+			foreach ($fields as $key => $value) {
+				$key = (strstr($key, "("))? $key : "`{$key}`";
+				$field_list .= (strlen($field_list))? ", " : "";
+				$field_list .= "{$key} as '{$value}'";
+			}
+			$fields = $field_list;
+		}
+		
+		// Generate Query
+		$query = "	SELECT
+						{$fields}
+					FROM
+						`{$this->table}`
+					WHERE
+						{$conditions}
+					ORDER BY
+						`{$order}` {$order_direction}
+					";
+		
+		// Return Query
+		return $query;
+	}
+	
 	private function filter_clauses($filters) {
 		// Local Variables
 		$where = "";
 		
 		// Confirm UID Field
-		$this->uid_field = ($this->uid_field)? $this->uid_field : "uid";
+		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
 		
 		// Generate Where Clause
 		if (strlen($filters)) {
@@ -245,11 +279,14 @@ class Model {
 				$item = trim($item);
 				$components = array();
 				$components[0] = substr($item, 0, strpos($item, " "));
-				$components[1] = substr($item, strpos($item, " ") + 1, 1);
-				$components[2] = substr($item, strpos($item, " ", strpos($item, " ") + 1) + 1);
+				$pos1 = strpos($item, " ") + 1;
+				$pos2 = strpos($item, " ", $pos1) + 1;
+				$components[1] = substr($item, $pos1, $pos2 - $pos1);
+				$components[2] = substr($item, $pos2);
 				$field = "`{$components[0]}`";
 				$operator = $components[1];
-				$value = "\"{$components[2]}\"";
+				$value = "{$components[2]}";
+				$value = ($value == "NULL")? $value : "\"{$value}\"";
 				$where .= (strlen($where))? " AND" : "";
 				$where .= " {$field} {$operator} {$value} ";
 			}
@@ -269,7 +306,7 @@ class Model {
 		}
 	}
 	
-	public static function Listing($heading, $order="", $where="") {
+	public static function Listing($headings, $filters=null, $order=null, $order_direction=null) {
 		// Log Activity
 		MVC::log(" - Generating Model Listing.", 6);
 		
@@ -277,12 +314,8 @@ class Model {
 		$obj_class = new ReflectionClass(get_called_class());
 		$obj = $obj_class->newInstanceArgs(array());
 		
-		// Prepare query variables
-		$order_by = ($order)? "ORDER BY `{$order}`" : "";
-		$where = ($where)? $where : "WHERE `active` = 1";
-		
 		// Generate Query
-		$query = "SELECT * FROM `{$obj->table}` {$order_by} {$where}";
+		$query = $obj->prepare_filtered_query($filters, $order, $order_direction, $headings);
 		MVC::log(" > Query: " . $query);
 		
 		// Create Listing
@@ -292,6 +325,16 @@ class Model {
 		return $listing;
 	}
 	
+	public function populate_from_form() {
+		// Get Form Data
+		$data = $_REQUEST;
+		
+		// Populate fields
+		$this->get_attributes();
+		foreach($this->fields as $key) {
+			$this->$key = (isset($_REQUEST[$key]))? $_REQUEST[$key] : $this->$key;
+		}
+	}
 }
 
 // ==========================================================================================

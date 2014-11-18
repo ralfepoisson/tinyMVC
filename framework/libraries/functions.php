@@ -15,17 +15,14 @@ function now() {
 
 function get_query_count($query) {
 	# Get Count
-	$count_query														= substr($query, 0, strpos($query, "SELECT") + 7) . " COUNT(*) " . substr($query, strrpos($query, "FROM"));
-	$num_records														= MVC::DB()->fetch_single($count_query);
+	$count_query = substr($query, 0, strpos($query, "SELECT") + 7) . " COUNT(*) " . substr($query, strrpos($query, "FROM"));
+	$num_records = MVC::DB()->fetch_single($count_query);
 	
 	# Return Count
 	return $num_records;
 }
 
-function paginated_listing($query, $this_page="", $prefix="") {
-	# GLobal Variables
-	global $_GLOBALS, $cur_page, $_db;
-	
+function paginated_listing($query, $this_page="", $prefix="", $max=20) {
 	# Local Variables
 	$head = array();
 	
@@ -36,13 +33,13 @@ function paginated_listing($query, $this_page="", $prefix="") {
 	
 	# Get Count
 	$num_records = get_query_count($query);
-	$num_pages = ceil($num_records / 20);
+	$num_pages = ceil($num_records / $max);
 	
 	# Get Starting Record
-	$starting_record = ($page - 1) * 20;
+	$starting_record = ($page - 1) * $max;
 	
 	# Get Data
-	$data = MVC::DB()->fetch($query . " LIMIT {$starting_record}, 20");
+	$data = MVC::DB()->fetch($query . " LIMIT {$starting_record}, {$max}");
 	
 	# Ensure that Data was returned
 	if (!sizeof($data)) { return; }
@@ -96,11 +93,11 @@ function paginated_listing($query, $this_page="", $prefix="") {
 	
 	# Output Page selection
 	$page_select = "";
-	if ($num_records > $_GLOBALS['max_results']){
+	if ($num_records > $max){
 		$page_select .= "<script>\n";
 		$page_select .= "	function gotoURL(me){\n";
 		$page_select .= "		window.location.replace('$this_page&{$prefix}results_page=' + me.value);\n";
-		$page_select .= "}\n";
+		$page_select .= "	}\n";
 		$page_select .= "</script>\n";
 		$page_select .= "<div align='right' style='padding:0;margin:0;'>\n";
 		$page_select .= "	Page : <SELECT name='results_pages' onchange='gotoURL(this);'>\n";
@@ -114,7 +111,7 @@ function paginated_listing($query, $this_page="", $prefix="") {
 	
 	# Navigation Buttons
 	$buttons = "";
-	if ($num_records > $_GLOBALS['max_results']){
+	if ($num_records > $max){
 		$previous_link = ($page > 1)? "$this_page&$prefix" . "results_page=" . ($page - 1) : "";
 		$next_link = (($page * $_GLOBALS['max_results']) < $num_records)? "$this_page&$prefix" . "results_page=" . ($page + 1) : "";
 		$buttons .= "<br>" . nav_buttons($previous_link, $next_link);
@@ -124,7 +121,7 @@ function paginated_listing($query, $this_page="", $prefix="") {
 	$html = "
 	{$page_select}
 	
-	<table class='table'>
+	<table class='table' style='margin-top:20px;'>
 		{$headings}
 		{$rows}
 	</table>
@@ -142,7 +139,7 @@ function paginated_listing($query, $this_page="", $prefix="") {
  * @return string
  */
 function next_button($link){
-	$button 															= "<a href='$link'><img src='img/next.gif' border='0' height='35' width='97'></a>";
+	$button = "<a href='$link'><i class='glyphicon glyphicon-chevron-right'></i></a>";
 	return $button;
 }
 
@@ -152,7 +149,7 @@ function next_button($link){
  * @return string
  */
 function previous_button($link){
-	$button 															= "<a href='$link'><img src='img/previous.gif' border='0' height='35' width='100'></a>";
+	$button = "<a href='$link'><i class='glyphicon glyphicon-chevron-left'></i></a>";
 	return $button;
 }
 
@@ -164,14 +161,18 @@ function previous_button($link){
  * @return string
  */
 function nav_buttons($link_previous, $link_next, $align="center"){
-	$html 																= "<table align='center'><tr>";
+	$html = "<table align='center'><tr>";
 	if ($link_previous){
-		$html 															.= "<td>" . previous_button($link_previous) . "</td>";
+		$html .= "<td>" . previous_button($link_previous) . "</td>";
 	}
 	if ($link_next){
-		$html 															.= "<td>" . next_button($link_next) . "</td>";
+		$html .= "<td>" . next_button($link_next) . "</td>";
 	}
-	$html 																.= "</tr></table>";
+	$html .= "</tr></table>";
 	return $html;
+}
+
+function redirect($location) {
+	print "<script>window.location.href = \"{$location}\";</script>";
 }
 

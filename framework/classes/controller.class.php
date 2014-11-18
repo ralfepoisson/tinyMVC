@@ -25,12 +25,17 @@ abstract class AbstractController {
 	# --------------------------------------------------------------------------------------
 	
 	public function __construct() {
-		# Global Variables
-		global $_GLOBALS;
+		// Global Variables
+		global $configuration;
 		
-		# Set Public Variables
-		$this->cur_page													= (isset($_GET['p']))? 		"?p={$_GET['p']}"		: "?p={$_GLOBALS['default_page']}";
-		$this->action													= (isset($_GET['action']))?	"?p={$_GET['action']}"	: "?p={$_GLOBALS['default_action']}";
+		// Set Public Variables
+		$this->cur_page = (isset($_GET['p']))? "?p={$_GET['p']}" : "?p=" . $configuration->default_page;
+		$this->action = (isset($_GET['action']))? "?p={$_GET['action']}" : "?p=" . $configuration->default_action;
+	}
+	
+	public function redirect($function, $controller="") {
+		$controller = ($controller)? $controller : $this->cur_page;
+		redirect($controller . "&action=" . $function);
 	}
 	
 }

@@ -71,7 +71,7 @@ class MVC {
 		
 	}
 	
-	public static function start() {
+	public static function start($headerless=false) {
 		// Log Activity
 		MVC::log(" [*] MVC Starting...");
 		
@@ -85,12 +85,14 @@ class MVC {
 		MVC::log(" - Creating Application", 8);
 		$mvc->App = Application::Factory($mvc->AppConfig);
 		
-		// Get Current User
-		$mvc->App->user = new User(get_user_uid());
+		if (!$headerless) {
+			// Get Current User
+			$mvc->App->user = new User(get_user_uid());
 		
-		// Construct Page
-		MVC::log(" - Constructing Page", 8);
-		$mvc->App->draw_page();
+			// Construct Page
+			MVC::log(" - Constructing Page", 8);
+			$mvc->App->draw_page();
+		}
 	}
 	
 	public function load_framework() {

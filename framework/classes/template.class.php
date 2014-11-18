@@ -71,12 +71,13 @@ class Template {
 		# Get the Position of the Content
 		$marker														= "{{" . $marker . "}}";
 		$pos														= strpos($this->html, $marker);
+		$pos														= ($pos)? $pos : strlen($this->html);
 		
 		# Get the Top half
 		$this->top													= substr($this->html, 0, $pos);
 		
 		# Get the Bottom half
-		$this->bottom												= substr($this->html, $pos + strlen($marker));
+		$this->bottom												= ($pos > 0)? substr($this->html, $pos + strlen($marker)) : "";
 	}
 	
 	public function render($html, $variables=0) {
