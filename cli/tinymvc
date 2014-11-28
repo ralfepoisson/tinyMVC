@@ -133,7 +133,11 @@ function create_new_app() {
 	mkdir($base . "helpers/");
 	mkdir($base . "models/");
 	mkdir($base . "views/");
-	mkdir($base . "views/home");
+	mkdir($base . "views/home/");
+	mkdir($base . "assets/");
+	mkdir($base . "assets/img/");
+	mkdir($base . "assets/js/");
+	mkdir($base . "assets/css/");
 	
 	// Copy templates
 	output (" - Copying files");
@@ -146,6 +150,7 @@ function create_new_app() {
 	copy($templates . "default.sample.html", $base . "views/home/default.html");
 	copy($templates . "user.class.sample.php", $base . "models/user.class.php");
 	copy($templates . "home.sample.php", $base . "controllers/home.php");
+	copy($templates . "styles.sample.css", $base . "assets/css/styles.css");
 	
 	// Done
 	output (" - Done.\n");
