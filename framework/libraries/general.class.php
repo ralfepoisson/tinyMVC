@@ -167,9 +167,14 @@ class GeneralFunctions {
         curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($c,CURLOPT_SSL_VERIFYPEER, false);
-
+		
         // Execute CURL Request
         $response = curl_exec($c);
+        
+        // Get the information about the Response
+        $status_code = curl_getinfo($c, CURLINFO_HTTP_CODE);
+        
+        // Close Connection
         curl_close($c);
 
         // Return the Response
@@ -182,7 +187,6 @@ class GeneralFunctions {
 
         // Deserialize the JSON
         $data = json_decode($raw);
-        var_dump($data);
 
         // Return the data object
         return $data;

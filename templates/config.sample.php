@@ -20,7 +20,7 @@ $configuration = (object)array();
  * to the /var/log/my_apps_name directory, and there would be a separate log for each day, where the file name would be
  * in the format of YYYYMMDD.log
  */
-$configuration->log_file = "/var/log/myapp/" . date("Ymd") . ".log";
+$configuration->log_file = TINYMVC_APP_DIR . "/log/" . date("Ymd") . ".log";
 
 /**
  * db_engine

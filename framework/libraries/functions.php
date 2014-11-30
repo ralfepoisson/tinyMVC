@@ -1,5 +1,22 @@
 <?php
 
+function logg($message) {
+	// Global Variables
+	global $configuration;
+	
+	// Open File for Appending
+	$f = fopen($configuration->log_file, 'a');
+	
+	// Prepare Message
+	$text = date("Y-m-d H:i:s") . " " . $message . "\n";
+	
+	// Append Message to Log
+	fputs($f, $text);
+	
+	// Close File
+	fclose($f);
+}
+
 function get_user_uid() {
 	return (isset($_SESSION['user_id']))? $_SESSION['user_id'] : 0;
 }
