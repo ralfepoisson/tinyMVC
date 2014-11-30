@@ -8,7 +8,7 @@
  * @license GPLv3
  */
 
-define("TINYMVC_LOG", "/var/log/tinymvc/" . date("Ymd") . ".log");
+define("TINYMVC_LOG", dirname(dirname(__FILE__)) . "/log/" . date("Ymd") . ".log");
 
 define("TINYMVC_LOG_LEVEL", 10);
 

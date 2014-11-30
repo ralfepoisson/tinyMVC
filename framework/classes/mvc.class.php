@@ -76,7 +76,7 @@ class MVC {
 		MVC::log(" [*] MVC Starting...");
 		
 		// Store latest page request
-		$_SESSION['accessing_page'] = $_SERVER['REQUEST_URI'];
+		$_SESSION['accessing_page'] = (isset($_SERVER['REQUEST_URI']))? $_SERVER['REQUEST_URI'] : "./";
 		
 		// Get Singleton
 		$mvc = MVC::Factory();

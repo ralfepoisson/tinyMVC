@@ -19,7 +19,7 @@ class GeneralFunctions {
 			if (isset($_SERVER["HTTP_CLIENT_IP"]))
 				return $_SERVER["HTTP_CLIENT_IP"];
 
-			return $_SERVER["REMOTE_ADDR"];
+			return (isset($_SERVER["REMOTE_ADDR"]))? $_SERVER["REMOTE_ADDR"] : "127.0.0.1";
 		}
 
 		if (getenv('HTTP_X_FORWARDED_FOR'))
@@ -157,6 +157,35 @@ class GeneralFunctions {
 		// Return Select Box
 		return $html;
 	}
-	
+
+    public static function get_webpage($url) {
+        // Create CURL Request object
+        $c = curl_init($url);
+
+        // Set Parameters
+        curl_setopt($c, CURLOPT_TIMEOUT, 30);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($c,CURLOPT_SSL_VERIFYPEER, false);
+
+        // Execute CURL Request
+        $response = curl_exec($c);
+        curl_close($c);
+
+        // Return the Response
+        return $response;
+    }
+
+    public static function get_json($url) {
+        // Get the raw data from the URL
+        $raw = GeneralFunctions::get_webpage($url);
+
+        // Deserialize the JSON
+        $data = json_decode($raw);
+        var_dump($data);
+
+        // Return the data object
+        return $data;
+    }
 }
 

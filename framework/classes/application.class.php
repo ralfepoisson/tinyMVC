@@ -70,13 +70,13 @@ class Application {
 		$dir														= MVC::get_app_dir() . "/helpers/";
 		$d															= opendir($dir);
 		while ($entry												= readdir($d)) {
-			if (strstr($entry, ".inc.php")) {
+			if (strstr($entry, ".php")) {
 				include_once($dir . $entry);
 			}
 		}
 	}
 	
-	public function Factory($config) {
+	public static function Factory($config) {
 		# Global Variables
 		global $app;
 		

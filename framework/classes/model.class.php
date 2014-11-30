@@ -85,13 +85,15 @@ class Model {
 	 * Loads the object from a record in a database table
 	 */
 	function load() {
-		// Global Variables
-		global $_db;
-		
+		// Ensure that the ID has been set
+        $id_field = (isset($this->uid_field))? $this->uid_field : $this->default_uid_field;
+        if ($this->$id_field < 1) {
+            return;
+        }
+
 		// Confirm UID Field
 		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
-		$id_field = $this->uid_field;
-		
+
 		// Load Attributes
 		$this->get_attributes();
 		
