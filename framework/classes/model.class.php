@@ -177,9 +177,6 @@ class Model {
 		
 		// If the object does not exist, and the table is set, insert it
 		else if ($this->table) {
-			// Set Default Attributes
-			$data["creation_date"] = now();
-			
 			// Insert Record
 			$this->uid = MVC::DB()->insert(
 				$this->table,
@@ -199,7 +196,7 @@ class Model {
 		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
 		
 		// Disable
-		$MVC::DB()->disable($this->table, $this->uid);
+		MVC::DB()->disable($this->table, $this->uid);
 	}
 	
 	public function deactivate() {
