@@ -10,5 +10,5 @@
 
 define("TINYMVC_LOG", dirname(dirname(__FILE__)) . "/log/" . date("Ymd") . ".log");
 
-define("TINYMVC_LOG_LEVEL", 10);
+define("TINYMVC_LOG_LEVEL", 4);
 

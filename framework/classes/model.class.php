@@ -151,6 +151,7 @@ class Model {
 		
 		// Confirm UID Field
 		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
+		$id_field = $this->uid_field;
 		
 		// Get Attributes
 		$this->get_attributes();
@@ -165,23 +166,19 @@ class Model {
 		
 		// If object exists in database, update it
 		if ($this->exists()) {
-			$id_field = $this->uid_field;
 			MVC::DB()->update(
 				$this->table,
 				$data,
 				array(
-					$this->uid_field => $this->$id_field
+					$id_field => $this->$id_field
 				)
 			);
 		}
 		
 		// If the object does not exist, and the table is set, insert it
 		else if ($this->table) {
-			// Set Default Attributes
-			$data["creation_date"] = now();
-			
 			// Insert Record
-			$this->uid = MVC::DB()->insert(
+			$this->$id_field = MVC::DB()->insert(
 				$this->table,
 				$data
 			);

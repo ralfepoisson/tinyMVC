@@ -104,7 +104,7 @@ class GeneralFunctions {
 	
 	public static function generate_select($name, $values, $active="", $use_key=1, $custom_tags="") {
 		# Construct HTML
-		$html = "<select name=\"{$name}\" id=\"{$name}\" {$custom_tags}>\n";
+		$html = "<select class='form-control' name=\"{$name}\" id=\"{$name}\" {$custom_tags}>\n";
 		$html .= "	<option value='0'>Select One</option>\n";
 		foreach ($values as $key => $value) {
 			$key = ($use_key)? $key : $value;
@@ -116,22 +116,20 @@ class GeneralFunctions {
 		# Return HTML
 		return $html;
 	}
-		
+	
 	public static function generate_select_values($table, $id_field, $name_field, $where="", $order_by="") {
 		# Global Variables
 		global $_db;
 	
 		# Get Data
-		$where_clauses = (strlen(trim($where)))? filter_clauses($where) : "";
+		$where_clauses = (strlen(trim($where)))? "WHERE " . filter_clauses($where) : "";
 		$order_by = (strlen($order_by))? "ORDER BY {$order_by} " : "";
 		$query = "	SELECT
 						`{$id_field}` as 'id',
 						`{$name_field}` as 'name'
 					FROM
 						`{$table}`
-					WHERE
-						`active` = 1
-						{$where_clauses}
+					{$where_clauses}
 					{$order_by}
 					";
 		$data = MVC::DB()->fetch($query);

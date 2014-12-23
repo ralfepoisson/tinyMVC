@@ -99,6 +99,7 @@ class db_engine {
 	public function query($query){
 		# Set the current query
 		$this->query = $query;
+		MVC::log($this->query, 4);
 		
 		# Connect To Database
 		$this->db_connect();
@@ -201,7 +202,7 @@ class db_engine {
 			print "<a href='?p=home'>Click Here to Continue</a></div>\n";
 			
 			# Generate Detailed Error Message
-			$err .= ($this->query)? "<br />QUERY = {$query}" : "";
+			$err = ($this->query)? "<br />QUERY = {$this->query}" : "";
 			$trace = print_r(debug_backtrace(), 1);
 			$error_message = "<b>DB Error</b>: ";
 			$error_message .= "Failed to connect to MySQL: (" . $this->link->connect_errno . ") ";
@@ -228,7 +229,7 @@ class db_engine {
 			print "<a href='?p=home'>Click Here to Continue</a></div>\n";
 			
 			# Generate Detailed Error Message
-			$err .= ($this->query)? "<br />QUERY = {$query}" : "";
+			$err = ($this->query)? "<br />QUERY = {$this->query}" : "";
 			$trace = print_r(debug_backtrace(), 1);
 			$error_message = "<b>DB Error</b>: ";
 			$error_message .= "Failed to execute Query: (" . $this->link->errno . ") ";
