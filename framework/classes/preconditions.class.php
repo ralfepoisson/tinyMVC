@@ -25,5 +25,17 @@ public class Preconditions {
         }
     }
     
+    public static function CheckKeyIsSet($obj, $name) {
+        if ($obj < 1) {
+            throw new InvalidArgumentException($obj, "Invalid Argument: \${$name} is an invalid key.");
+        }
+    }
+    
+    public static function CheckMinLength($obj, $min, $name) {
+        if (strlen($obj) < $min) {
+            throw new InvalidArgumentException($obj, "Invalid Argument: \${$name} is less than the minimum length, {$min}.");
+        }
+    }
+    
 }
 
