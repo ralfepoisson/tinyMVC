@@ -12,7 +12,7 @@ while (true) {
 	print_menu();
 	
 	// Read selection
-	$selection = readline();
+	$selection = read_line();
 	
 	// React to selection
 	handle_menu_selection($selection);
@@ -62,7 +62,7 @@ function output($message) {
 	print $message . "\n";
 }
 
-function readline() {
+function read_line() {
 	// Open Standard Input for Reading
 	$f = fopen("php://stdin", 'r');
 	
@@ -84,7 +84,7 @@ function get_input($question, $default) {
 	print $output;
 	
 	// Read the input
-	$input = trim(readline());
+	$input = trim(read_line());
 	
 	// Return the result
 	return (strlen($input))? $input : $default;
