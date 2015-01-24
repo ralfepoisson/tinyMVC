@@ -19,6 +19,8 @@ abstract class AbstractController {
 	
 	public $cur_page;
 	public $action;
+	public $queryExecutor;
+	public $commandExecutor;
 	
 	# --------------------------------------------------------------------------------------
 	# METHODS
@@ -31,6 +33,8 @@ abstract class AbstractController {
 		// Set Public Variables
 		$this->cur_page = (isset($_GET['p']))? "?p={$_GET['p']}" : "?p=" . $configuration->default_page;
 		$this->action = (isset($_GET['action']))? "?p={$_GET['action']}" : "?p=" . $configuration->default_action;
+		$this->commandExecutor = new CommandExecutor();
+		$this->queryExecutor = new QueryExecutor();
 	}
 	
 	public function redirect($function, $controller="") {
