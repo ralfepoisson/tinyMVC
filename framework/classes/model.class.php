@@ -205,9 +205,6 @@ class Model {
 	}
 	
 	public function get($filters="", $order="", $order_direction="ASC") {
-		// Global Variables
-		global $_db;
-		
 		// Get Data
 		$query = $this->prepare_filtered_query($filters, $order, $order_direction);
 		$data = MVC::DB()->fetch($query);
