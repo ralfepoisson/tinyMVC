@@ -63,7 +63,7 @@ class GeneralFunctions {
 		// Generate filtered listing
 		$listing = array();
 		foreach($entries as $entry) {
-			if (strstr($entry, $pattern)) {
+			if ((strstr($entry, $pattern) || !strlen($pattern)) && !($entry == "." || $entry == "..") ) {
 				$listing[] = $entry;
 			}
 		}

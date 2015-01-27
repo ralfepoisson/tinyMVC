@@ -7,7 +7,7 @@
 
 class APIServer {
     
-    public static function Return($obj) {
+    public static function APIReturn($obj) {
         $json = json_encode($obj);
         print $json;
     }

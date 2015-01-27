@@ -5,7 +5,7 @@
  * @author Ralfe Poisson <ralfepoisson@gmail.com>
  */
 
-public interface ICommand {
+interface ICommand {
     
     public function Execute();
     

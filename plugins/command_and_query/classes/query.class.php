@@ -5,7 +5,7 @@
  * @author Ralfe Poisson <ralfepoisson@gmail.com>
  */
 
-public interface IQuery {
+interface IQuery {
     
     public function Execute();
     

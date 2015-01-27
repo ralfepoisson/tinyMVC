@@ -5,7 +5,7 @@
  * @author Ralfe Poisson <ralfepoisson@gmail.com>
  */
 
-class InvalidArgumentException extends Exception {
+class PreconditionFailureException extends Exception {
     
     public $predicate;
     

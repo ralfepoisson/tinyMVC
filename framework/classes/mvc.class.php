@@ -18,14 +18,17 @@ class MVC {
 	public $AppConfig;
 	
 	public $General;
-	
-	public function __construct() {
+
+    /**
+     * Constructor
+     */
+    public function __construct() {
 		// Global Variables
 		global $configuration;
 		
 		// Log Activity
-		$this->log(" [*] MVC Initialising", 4);
-		$this->log(" - Initializing attributes", 4);
+		MVC::log(" [*] MVC Initialising", 4);
+        MVC::log(" - Initializing attributes", 4);
 		
 		// Initialize Attributes
 		$this->General = new GeneralFunctions();
@@ -34,11 +37,15 @@ class MVC {
 		$this->AppConfig = $configuration;
 		
 		// Load Framework
-		$this->log(" - Loading Framework", 4);
+        MVC::log(" - Loading Framework", 4);
 		$this->load_framework();
 	}
-	
-	public static function Factory() {
+
+    /**
+     * MVC Factory
+     * @return MVC
+     */
+    public static function Factory() {
 		// Global Variables
 		global $MVC;
 		
@@ -53,22 +60,15 @@ class MVC {
 		
 		// Return the singleton
 		return $MVC;
-	}
-	
-	public static function headless_start() {
-		// Log Activity
-		MVC::log(" [*] MVC Starting...");
-		
-		// Store latest page request
-		$_SESSION['accessing_page'] = $_SERVER['REQUEST_URI'];
-		
-		// Get Singleton
-		$mvc = MVC::Factory();
-		
-		// Create Application Object
-		MVC::log(" - Creating Application", 8);
-		$mvc->App = Application::Factory($mvc->AppConfig);
-		
+    }
+
+    /**
+     * Alias for the MVC::start() function with the headerless parameter
+     * set to true.
+     */
+    public static function headless_start() {
+		// Headerless Start
+        MVC::start(true);
 	}
 	
 	public static function start($headerless=false) {
@@ -97,11 +97,28 @@ class MVC {
 	
 	public function load_framework() {
 		// Load Classes
-		$this->General->auto_load(TINYMVC_LOCATION . "classes/", "class.php");
+		$this->General->auto_load(TINYMVC_LOCATION . "classes/", ".php");
 		
 		// Load Libraries
 		$this->General->auto_load(TINYMVC_LOCATION . "libraries/", ".php");
+
+        // Load Plugins
+        $this->load_plugins();
 	}
+
+    public function load_plugins() {
+        // Get plugins
+        $plugin_dir = dirname(TINYMVC_LOCATION) . "/plugins/";
+        $folders = GeneralFunctions::get_dir_filtered_listing($plugin_dir, "");
+
+        // Attempt to Load Plugins
+        foreach ($folders as $folder) {
+            $plugin_script = $plugin_dir . $folder . "/plugin.php";
+            if (file_exists($plugin_script)) {
+                require_once($plugin_script);
+            }
+        }
+    }
 	
 	public static function log($message, $log_level=3) {
 		// Only log configured log level or lower
