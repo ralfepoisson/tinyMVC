@@ -136,8 +136,12 @@ class MVC {
 	public static function get_app_dir() {
 		return TINYMVC_APP_DIR;
 	}
-	
-	public static function DB() {
+
+    /**
+     * Return the Singleton Database Engine
+     * @return db_engine
+     */
+    public static function DB() {
 		$db = DB::Factory();
 		return $db;
 	}
@@ -160,6 +164,10 @@ class MVC {
 		print "<script>window.location.href = '{$url}';</script>"; 
 		die();
 	}
-	
+
+    public static function RequestHeaders() {
+        return getallheaders();
+    }
+
 }
 

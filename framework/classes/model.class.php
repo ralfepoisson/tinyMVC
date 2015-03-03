@@ -11,7 +11,7 @@
 // CLASS
 // ==========================================================================================
 
-class Model {
+class Model extends BaseModel {
 	
 	// --------------------------------------------------------------------------------------
 	// ATTRIBUTES
@@ -146,9 +146,6 @@ class Model {
 	 * Inserts/Updates object in the database
 	 */
 	function save() {
-		// Global Variables
-		global $_db;
-		
 		// Confirm UID Field
 		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
 		$id_field = $this->uid_field;
@@ -159,7 +156,7 @@ class Model {
 		// Construct Associative array to pass to database object
 		$data = array();
 		foreach ($this->fields as $field) {
-			if (!($field == $this->uid_field)) {
+			if (!($field == $this->uid_field && ( strlen($this->$field) == 0 || $this->$field == 0 ) ) ) {
 				$data[$field] = $this->$field;
 			}
 		}
@@ -178,10 +175,15 @@ class Model {
 		// If the object does not exist, and the table is set, insert it
 		else if ($this->table) {
 			// Insert Record
-			$this->$id_field = MVC::DB()->insert(
+			$id = MVC::DB()->insert(
 				$this->table,
 				$data
 			);
+
+            // Get the Auto Incrementing Id if applicable
+            if ($this->$id_field == null || $this->$id_field == 0) {
+                $this->$id_field = $id;
+            }
 		}
 	}
 	

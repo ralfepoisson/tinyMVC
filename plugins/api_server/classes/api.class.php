@@ -23,13 +23,15 @@ class APIServer {
         // Start the MVC Server in Headerless mode
         MVC::start(true);
 
+        $json = json_decode(file_get_contents('php://input'));
+
         // Determine the Controller and Action
         $app = MVC::Factory()->App;
         $controller = $app->get_page();
         $action = $app->get_action();
 
         // Run the Action
-        $controller->$action();
+        $controller->$action($json);
     }
     
 }

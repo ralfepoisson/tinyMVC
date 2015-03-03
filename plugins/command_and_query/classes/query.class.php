@@ -17,9 +17,11 @@ abstract class Query implements IQuery {
     
     public $Result;
     public $DB;
+    public $queryExecutor;
     
     public function __construct() {
         $this->DB = MVC::DB();
+        $this->queryExecutor = new QueryExecutor();
     }
     
     public function Execute() {

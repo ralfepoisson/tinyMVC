@@ -4,8 +4,12 @@
 global $DB;
 
 class DB {
-	
-	public static function create() {
+
+    /**
+     * Create a Database Engine instance
+     * @return db_engine
+     */
+    public static function create() {
 		// Database Engine
 		$db = new db_engine(	MVC::config('db_host'),
 								MVC::config('db_user'),
@@ -20,8 +24,13 @@ class DB {
 		// Return Database Object
 		return $db;
 	}
-	
-	public static function Factory($engine="mysql") {
+
+    /**
+     * Generate the Singleton Database Engine based on a database technology.
+     * @param string $engine
+     * @return db_engine
+     */
+    public static function Factory($engine="mysql") {
 		// Global Variables
 		global $DB;
 		

@@ -17,9 +17,13 @@ abstract class Command implements ICommand {
     
     public $Result;
     public $DB;
+    public $commandExecutor;
+    public $queryExecutor;
     
     public function __construct() {
         $this->DB = MVC::DB();
+        $this->commandExecutor = new CommandExecutor();
+        $this->queryExecutor = new QueryExecutor();
     }
     
     public function Execute() {
