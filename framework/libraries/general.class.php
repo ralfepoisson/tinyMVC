@@ -30,6 +30,21 @@ class GeneralFunctions {
 
 		return getenv('REMOTE_ADDR');
 	}
+
+    public static function get_client_useragent() {
+        // Local Variables
+        $agent = "unknown";
+
+        // Check that we have access to the $_SERVER variable
+        if (isset($_SERVER)) {
+            if (isset($_SERVER['HTTP_USER_AGENT'])) {
+                $agent = $_SERVER['HTTP_USER_AGENT'];
+            }
+        }
+
+        // Return the User Agent
+        return $agent;
+    }
 	
 	public static function file_append($file, $line) {
 		// Open file for appending

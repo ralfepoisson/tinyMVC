@@ -35,7 +35,7 @@ class MVC {
 		
 		// Load App Configuration
 		$this->AppConfig = $configuration;
-		
+
 		// Load Framework
         MVC::log(" - Loading Framework", 4);
 		$this->load_framework();
@@ -84,7 +84,7 @@ class MVC {
 		// Create Application Object
 		MVC::log(" - Creating Application", 8);
 		$mvc->App = Application::Factory($mvc->AppConfig);
-		
+
 		if (!$headerless) {
 			// Get Current User
 			$mvc->App->user = new User(get_user_uid());

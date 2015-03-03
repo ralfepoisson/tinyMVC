@@ -274,7 +274,7 @@ class db_engine {
 		$x = 0;
 		foreach ($data as $field => $value) {
 			$query .= ($x)? ", " : "";
-			$query .= " \"{$value}\" ";
+			$query .= ($value == null)? "NULL " : " \"{$value}\" ";
 			$x++;
 		}
 		$query .= ")";
@@ -297,13 +297,14 @@ class db_engine {
 		$query = "UPDATE `$table` ";
 		$x = 0;
 		foreach ($data as $field => $value){
+            $formatted_value = ($value == null)? "NULL" : "\"{$value}\"";
 			if ($x == 0){
 				$query .= "SET ";
-				$query .= "`{$field}` = \"{$value}\" ";
+				$query .= "`{$field}` = {$formatted_value} ";
 				$x++;
 			}
 			else {
-				$query .= ", `{$field}` = \"{$value}\" ";
+				$query .= ", `{$field}` = {$formatted_value} ";
 			}
 			$x++;
 		}
