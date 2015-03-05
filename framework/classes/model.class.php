@@ -1,6 +1,6 @@
 <?php
 /**
- * Project
+ * Abstract Model
  * 
  * @author Ralfe Poisson <ralfepoisson@gmail.com>
  * @version 1.0
@@ -8,7 +8,7 @@
  */
 
 // ==========================================================================================
-// CLASS
+// Model CLASS
 // ==========================================================================================
 
 class Model extends BaseModel {
@@ -32,7 +32,7 @@ class Model extends BaseModel {
 	 * 
 	 * Initialise default values for Model attributes 
 	 */
-	function __construct($uid=0) {
+	public function __construct($uid=0) {
 		// Initialise Variables
 		$this->table = get_called_class();
 		$this->fields = array();
@@ -44,7 +44,46 @@ class Model extends BaseModel {
 			$this->load();
 		}
 	}
-	
+
+    /**
+     * Construct the where clause for the Primary Key
+     * @return string
+     */
+    private function id_where_clause() {
+        // Single PK Field
+        $id_field = $this->uid_field;
+        if (!is_array($this->uid_field)) {
+            return "`{$this->uid_field}` = '{$this->$id_field}'";
+        }
+
+        // Composite PK
+        $where = "";
+        foreach($this->uid_field as $field) {
+            $where .= (strlen($where) > 0)? " AND " : "";
+            $where .= "`{$field}` = '{$this->$field}'";
+        }
+        return $where;
+    }
+
+    /**
+     * Generate Field List for the Primary Key
+     * @return string
+     */
+    private function id_field_list() {
+        // Single PK
+        if (!is_array($this->uid_field)) {
+            return "`{$this->uid_field}`";
+        }
+
+        // Composite PK
+        $fields = "";
+        foreach($this->uid_field as $field) {
+            $fields .= (strlen($fields) > 0)? ", " : "";
+            $fields .= "`{$field}`";
+        }
+        return $fields;
+    }
+
 	/**
 	 * Exists
 	 * 
@@ -65,7 +104,7 @@ class Model extends BaseModel {
 						FROM
 							`{$this->table}`
 						WHERE
-							`{$this->uid_field}` = '{$this->$id_field}'
+							" . $this->id_where_clause() . "
 						";
 			$exists = MVC::DB()->fetch_single($query);
 			
@@ -105,7 +144,7 @@ class Model extends BaseModel {
 						FROM
 							`{$this->table}`
 						WHERE
-							`{$this->uid_field}` = '{$this->$id_field}'
+							" . $this->id_where_clause() . "
 						";
 			$data = MVC::DB()->fetch_one($query);
 			
@@ -209,15 +248,23 @@ class Model extends BaseModel {
 	public function get($filters="", $order="", $order_direction="ASC") {
 		// Get Data
 		$query = $this->prepare_filtered_query($filters, $order, $order_direction);
-		$data = MVC::DB()->fetch($query);
-		
+        $data = MVC::DB()->fetch($query);
+
 		// Generate array of objects
 		$objects = array();
 		$class = get_class($this);
 		foreach ($data as $item) {
 			$obj_class = new ReflectionClass($class);
-			$id_field = $this->uid_field;
-			$args = array($item->$id_field);
+            if (!is_array($this->uid_field)) {
+                $uid_field = $this->uid_field;
+                $args = array($item->$uid_field);
+            }
+            else {
+                $args = array();
+                foreach ($this->uid_field as $field) {
+                    $args[] = $item->$field;
+                }
+            }
 			$obj = $obj_class->newInstanceArgs($args);
 			$objects[] = $obj;
 		}
@@ -225,18 +272,18 @@ class Model extends BaseModel {
 		// Return Objects
 		return $objects;
 	}
-	
+
 	public function prepare_filtered_query($filters=null, $order=null, $order_direction="ASC", $fields=null) {
 		// Confirm UID Field
 		$this->uid_field = ($this->uid_field)? $this->uid_field : $this->default_uid_field;
-		$order = ($order)? $order : $this->uid_field;
+		$order = ($order)? $order : $this->id_field_list();
 		
 		// Generate Where Conditions from Filters
 		$conditions = $this->filter_clauses($filters);
 		
 		// Determine Fields to Select
 		if ($fields == null) {
-			$fields = "`{$this->uid_field}`";
+            $fields = $this->id_field_list();
 		}
 		else {
 			$field_list = "";
@@ -256,7 +303,7 @@ class Model extends BaseModel {
 					WHERE
 						{$conditions}
 					ORDER BY
-						`{$order}` {$order_direction}
+						{$order} {$order_direction}
 					";
 		
 		// Return Query
