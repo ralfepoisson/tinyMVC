@@ -20,33 +20,35 @@ abstract class StateMachine {
         $this->Id = $id;
         $this->Activities = array();
         $this->Triggers = array();
+        $this->Context = (object)array();
     }
 
     /**
      * Configure statemachine and return starting state
-     * @return Trigger
+     * @return string
      */
     public abstract function Configure();
 
     /**
      * Add Activity State to the State Machine
      * @param Activity $activity
+     * @param string $label
      */
-    public function AddActivity($activity) {
-        $this->Activities[] = $activity;
+    public function AddActivity($activity, $label) {
+        $this->Activities[$label] = $activity;
     }
 
     /**
      * Add Trigger to the State Machine
-     * @param Trigger $trigger
+     * @param string $trigger
      */
     public function AddTrigger($trigger) {
-        $this->Triggers[] = $trigger;
+        $this->Triggers[$trigger] = $trigger;
     }
 
     /**
      * Process Trigger
-     * @param Trigger $trigger
+     * @param string $trigger
      * @return null
      */
     public function ProcessTrigger($trigger) {
@@ -79,10 +81,8 @@ abstract class StateMachine {
      */
     public function GetActivityByName($name) {
         // Search for activity
-        foreach($this->Activities as $activity) {
-            if ($activity->Name == $name) {
-                return $activity;
-            }
+        if (isset($this->Activities[$name])) {
+            return $this->Activities[$name];
         }
 
         // None Found
@@ -97,7 +97,7 @@ abstract class StateMachine {
         $this->GetWorkflowState();
 
         // Run Current State
-        $trigger = $this->GetState($this->Context)->Run();
+        $trigger = $this->GetState($this->Context)->Run($this->Context);
 
         // Get Next Activity to Run
         $this->State = $this->ProcessTrigger($trigger);
@@ -115,7 +115,8 @@ abstract class StateMachine {
 
         // Load data
         $this->State = $data->state;
-        $this->Context = $data->context;
+        $this->Context = json_decode(html_entity_decode($data->context));
+        $this->Context->WorkflowId = $this->Id;
     }
 
     /**
@@ -127,11 +128,11 @@ abstract class StateMachine {
             "workflows",
             array(
                 "state" => $this->State,
-                "context" => $this->Context,
+                "context" => htmlentities(json_encode($this->Context)),
                 "completion_date" => ($this->State == null)? now() : null
             ),
             array(
-                "id" => $tihs->Id
+                "id" => $this->Id
             )
         );
     }

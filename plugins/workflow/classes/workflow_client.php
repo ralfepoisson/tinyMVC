@@ -7,7 +7,9 @@
 class WorkflowClient {
 
     /**
-     * @param StateMachine
+     * Launch an instance of a state machine workflow.
+     * @param StateMachine $stateMachine
+     * @return int
      */
     public function StartWorkflow($stateMachine) {
         // Get Starting State
@@ -23,6 +25,9 @@ class WorkflowClient {
                 "updated_on" => now()
             )
         );
+
+        // Return Workflow Id
+        return $id;
     }
 
 }

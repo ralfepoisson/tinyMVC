@@ -60,7 +60,7 @@ class Application {
 		$dir														= MVC::get_app_dir() . "/models/";
 		$d															= opendir($dir);
 		while ($entry												= readdir($d)) {
-			if (strstr($entry, ".class.php")) {
+			if (strstr($entry, ".php")) {
 				include_once($dir . $entry);
 			}
 		}

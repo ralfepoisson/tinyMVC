@@ -32,6 +32,7 @@ class WorkflowServer {
      */
     private function checkTables() {
         // Check Tables
+        $tables = MVC::DB()->get_tables();
     }
 
     /**

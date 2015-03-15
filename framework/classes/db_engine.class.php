@@ -465,6 +465,14 @@ class db_engine {
 		// Execute Query
 		$this->query($query);
 	}
+
+    public function get_tables() {
+        // Get the Tables within the database
+        $tables = $this->fetch("SHOW TALBES");
+
+        // Return the tables
+        return $tables;
+    }
 	
 	private function generate_field_definition($name, $type) {
 		// Local Variables
