@@ -283,7 +283,9 @@ class db_engine {
 		$this->query($query);
 		
 		# Return UID
-		return mysqli_insert_id($this->link);
+		$id = mysqli_insert_id($this->link);
+        MVC::log(" - ID: " . $id, 10);
+        return $id;
 	}
 	
 	/**
@@ -435,7 +437,7 @@ class db_engine {
 	}
 	
 	public function use_db($db) {
-		$this->set_mysql_db($data);
+		$this->set_mysql_db($db);
 		$this->db_connect();
 	}
 	
@@ -468,7 +470,7 @@ class db_engine {
 
     public function get_tables() {
         // Get the Tables within the database
-        $tables = $this->fetch("SHOW TALBES");
+        $tables = $this->fetch("SHOW TABLES");
 
         // Return the tables
         return $tables;

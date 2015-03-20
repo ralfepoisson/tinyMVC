@@ -22,7 +22,8 @@ class WorkflowClient {
                 "type" => get_class($stateMachine),
                 "state" => $stateMachine->State,
                 "creation_date" => now(),
-                "updated_on" => now()
+                "updated_on" => now(),
+                "context" => htmlentities(json_encode($stateMachine->Context))
             )
         );
 

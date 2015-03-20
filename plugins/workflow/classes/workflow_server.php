@@ -33,6 +33,33 @@ class WorkflowServer {
     private function checkTables() {
         // Check Tables
         $tables = MVC::DB()->get_tables();
+
+        // Check if Workflow Table exists
+        foreach($tables as $table) {
+            if ($table->Tables_in_need_it == "workflows") {
+                return;
+            }
+        }
+
+        // Create missing Tables
+        MVC::log("WorkflowServer: Creating missing `workflows` table.", 3);
+        MVC::DB()->query("
+        CREATE TABLE `workflows` (
+            `id` int(11) auto_increment,
+            `type` varchar(100),
+            `state` varchar(100),
+            `retries` int(10) NOT NULL default 0,
+            `creation_date` datetime,
+            `deactivation_date` datetime,
+            `completion_date` datetime,
+            `suspended_date` datetime,
+            `updated_on` datetime,
+            `context` text,
+            `exception` text,
+            PRIMARY KEY (`id`)
+        )
+        ");
+        MVC::log("WorkflowServer: - Done.", 3);
     }
 
     /**
@@ -47,7 +74,8 @@ class WorkflowServer {
                 `workflows`
             WHERE
                 `deactivation_date` IS NULL AND
-                `completion_date` IS NULL
+                `completion_date` IS NULL AND
+                `suspended_date` IS NULL
         ");
 
         // Check if we retrieved anyting
@@ -60,7 +88,16 @@ class WorkflowServer {
         foreach($data as $item) {
             // Create the Workflow instance
             $obj = new ReflectionClass($item->type);
-            $this->Workflow[] = $obj->newInstanceArgs(array($item->id));
+            $workflow = $obj->newInstanceArgs(array($item->id));
+
+            // Decode Context
+            $workflow->Context = json_decode(html_entity_decode($workflow->context));
+
+            // Configure
+            $workflow->Configure();
+
+            // Add to List of Workflows
+            $this->Workflows[] = $workflow;
         }
     }
 

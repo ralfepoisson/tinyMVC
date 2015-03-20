@@ -27,14 +27,21 @@ class Preconditions {
             Preconditions::ThrowError($obj, $msg);
         }
     }
-    
+
     public static function CheckKeyIsSet($obj, $name) {
         if ($obj < 1) {
             $msg = "Invalid Argument: \${$name} is an invalid key.";
             Preconditions::ThrowError($obj, $msg);
         }
     }
-    
+
+    public static function CheckHasItems($obj, $name) {
+        if (sizeof($obj) == 0) {
+            $msg = "Invalid Argument: \${$name} has no items.";
+            Preconditions::ThrowError($obj, $msg);
+        }
+    }
+
     public static function CheckMinLength($obj, $min, $name) {
         if (strlen($obj) < $min) {
             $msg = "Invalid Argument: \${$name} is less than the minimum length, {$min}.";

@@ -4,7 +4,18 @@
  *
  * @author Ralfe Poisson <ralfepoisson@gmail.com>
  */
-abstract class StateMachine {
+abstract class StateMachine extends Model {
+
+    public $id;
+    public $type;
+    public $state;
+    public $retries;
+    public $creation_date;
+    public $deactivation_date;
+    public $completion_date;
+    public $suspended_date;
+    public $updated_on;
+    public $context;
 
     public $Id;
     public $Name;
@@ -17,10 +28,13 @@ abstract class StateMachine {
      * Constructor
      */
     public function __construct($id=0) {
+        $this->table = "workflows";
+        $this->id = $id;
         $this->Id = $id;
         $this->Activities = array();
         $this->Triggers = array();
         $this->Context = (object)array();
+        $this->load();
     }
 
     /**
@@ -96,14 +110,55 @@ abstract class StateMachine {
         // Get the current state
         $this->GetWorkflowState();
 
-        // Run Current State
-        $trigger = $this->GetState($this->Context)->Run($this->Context);
+        // Log Activity
+        MVC::log("Workflow: Running workflow #{$this->Id}.");
+        MVC::log("Workflow: - State: " . $this->State);
 
-        // Get Next Activity to Run
-        $this->State = $this->ProcessTrigger($trigger);
+        try {
+            // Run Current State
+            $trigger = $this->GetState($this->Context)->Run($this->Context);
+            MVC::log("Workflow: - Trigger: " . $trigger);
 
-        // Save State
-        $this->SaveWorkflowState();
+            // Get Next Activity to Run
+            $this->State = $this->ProcessTrigger($trigger);
+            MVC::log("Workflow: - Moving to State: " . $this->State);
+
+            // Save State
+            MVC::log("Workflow: - Saving Workflow.");
+            $this->SaveWorkflowState();
+        }
+        catch(Exception $e) {
+            // Handle Error
+            $error = str_replace('"', "'", json_encode($e));
+            MVC::log("Workflow: - Error: " . $error);
+            $this->HandleError($error);
+        }
+    }
+
+    private function HandleError($error) {
+        // Increment Retries
+        $this->retries++;
+        MVC::log("Workflow: - Retries: " . $this->retries);
+
+        // Check for Suspension Criteria
+        // TODO: This limit should be set in the configuration
+        if ($this->retries >= 5) {
+            MVC::log("Workflow: - Suspending workflow.");
+            $this->suspended_date = now();
+        }
+
+        // Update Workflow Record
+        MVC::DB()->update(
+            "workflows",
+            array(
+                "retries" => $this->retries,
+                "suspended_date" => $this->suspended_date,
+                "exception" => $error
+            ),
+            array(
+                "id" => $this->id
+            )
+        );
     }
 
     /**
