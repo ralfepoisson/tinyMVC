@@ -20,6 +20,9 @@ class APIServer {
      * Start the API Server and process API Request.
      */
     public static function start() {
+        // Allow Cross Domain Access
+        header("Access-Control-Allow-Origin: *");
+
         // Start the MVC Server in Headerless mode
         MVC::start(true);
 
