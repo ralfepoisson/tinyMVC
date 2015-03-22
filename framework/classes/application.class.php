@@ -49,31 +49,19 @@ class Application {
 		//check_installation();
 		
 		# Initialise Variables
-		$this->config												= $config;
-		$this->template												= new Template(TINYMVC_APP_DIR . "/views/" . $this->config->template);
+		$this->config = $config;
+		$this->template = new Template(TINYMVC_APP_DIR . "/views/" . $this->config->template);
 		
 		# Sanitize all User Input
 		$this->sanitize();
 	}
 	
 	public function include_models() {
-		$dir														= MVC::get_app_dir() . "/models/";
-		$d															= opendir($dir);
-		while ($entry												= readdir($d)) {
-			if (strstr($entry, ".php")) {
-				include_once($dir . $entry);
-			}
-		}
+        GeneralFunctions::auto_load(MVC::get_app_dir() . "/models/", ".php");
 	}
 	
 	public function include_helpers() {
-		$dir														= MVC::get_app_dir() . "/helpers/";
-		$d															= opendir($dir);
-		while ($entry												= readdir($d)) {
-			if (strstr($entry, ".php")) {
-				include_once($dir . $entry);
-			}
-		}
+        GeneralFunctions::auto_load(MVC::get_app_dir() . "/helpers/", ".php");
 	}
 	
 	public static function Factory($config) {
@@ -108,10 +96,10 @@ class Application {
 		}
 		
 		# Get Page
-		$this->page														= $this->get_page();
+		$this->page = $this->get_page();
 		
 		# Get Action
-		$action															= $this->get_action();
+		$action = $this->get_action();
 		
 		# Log Activity
 		MVC::log(" - Calling Controller Action: {$action}().", 8);
@@ -128,18 +116,18 @@ class Application {
 	
 	public function get_page() {
 		# Get the 'p' GET variable and sanitize it
-		$p																= (isset($_GET['p']))? preg_replace('@[^a-zA-Z0-9_]@', '', $_GET['p']) : $this->config->default_page;
-		$this->p														= $p;
+		$p = (isset($_GET['p']))? preg_replace('@[^a-zA-Z0-9_]@', '', $_GET['p']) : $this->config->default_page;
+		$this->p = $p;
 		
 		# Determine the file to include from the content directory
-		$dir															= MVC::get_app_dir() ."/controllers/";
-		$p																= $dir . $p . ".php";
-		$p																= (file_exists($p))? $p : $dir . "error.php";
+		$dir = MVC::get_app_dir() ."/controllers/";
+		$p = $dir . $p . ".php";
+		$p = (file_exists($p))? $p : $dir . "error.php";
 		
 		# Include the content file and create a page object
 		MVC::log(" - Loading Controller: " . $p, 8);
 		include_once($p);
-		$page															= new Controller();
+		$page = new Controller();
 		
 		# Return Page
 		return $page;
@@ -147,7 +135,7 @@ class Application {
 	
 	public function get_action() {
 		# Get the 'p' GET variable and sanitize it
-		$action															= (isset($_GET['action']))? preg_replace('@[^a-zA-Z0-9_]@', '', $_GET['action']) : $this->config->default_action;
+		$action = (isset($_GET['action']))? preg_replace('@[^a-zA-Z0-9_]@', '', $_GET['action']) : $this->config->default_action;
 		
 		# Return the Action
 		return $action;
@@ -155,13 +143,13 @@ class Application {
 	
 	public function sanitize() {
 		foreach ($_POST as $key => $value) {
-			$_POST[$key]												= htmlentities($value);
+			$_POST[$key] = htmlentities($value);
 		}
 		foreach ($_GET as $key => $value) {
-			$_POST[$key]												= htmlentities($value);
+			$_POST[$key] = htmlentities($value);
 		}
 		foreach ($_REQUEST as $key => $value) {
-			$_POST[$key]												= htmlentities($value);
+			$_POST[$key] = htmlentities($value);
 		}
 	}
 	
@@ -174,11 +162,11 @@ class Application {
 	
 	public function api_request() {
 		# Create API Object
-		$api															= new API();
+		$api = new API();
 		
 		# Get GET Data
-		$action															= Form::get_str("action");
-		$params															= $_GET;
+		$action = Form::get_str("action");
+		$params = $_GET;
 		
 		# Log Activity
 		MVC::log("API: Action: " . $action, 6);

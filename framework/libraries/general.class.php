@@ -88,12 +88,15 @@ class GeneralFunctions {
 	}
 	
 	public static function auto_load($dir, $pattern) {
+        // Log Activity
+        MVC::log("* Auto Load: {$dir} ({$pattern})");
+
 		// Get Listing
 		$files = GeneralFunctions::get_dir_filtered_listing($dir, $pattern);
 		
 		// Include files
 		foreach ($files as $file) {
-			MVC::log("  > Including {$file}", 8);
+			MVC::log("  > Including {$file}");
 			require_once($dir . $file);
 		}
 	}
