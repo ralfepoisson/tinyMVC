@@ -207,5 +207,20 @@ class GeneralFunctions {
         // Return the data object
         return $data;
     }
+
+    public static function get_request_method() {
+        if (isset($_SERVER['REQUEST_METHOD'])) {
+            return $_SERVER['REQUEST_METHOD'];
+        }
+        return null;
+    }
+
+    public static function HandleOptionsRequest() {
+        if (GeneralFunctions::get_request_method() == 'OPTIONS') {
+            header('Access-Control-Allow-Origin: *');
+            header('Access-Control-Allow-Headers: X-Requested-With');
+            exit;
+        }
+    }
 }
 

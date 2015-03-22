@@ -32,7 +32,10 @@ class MVC {
 		
 		// Initialize Attributes
 		$this->General = new GeneralFunctions();
-		
+
+        // Handle OPTIONS Requests
+        $this->General->HandleOptionsRequest();
+
 		// Load App Configuration
 		$this->AppConfig = $configuration;
 
