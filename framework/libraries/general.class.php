@@ -217,12 +217,23 @@ class GeneralFunctions {
 
     public static function HandleOptionsRequest() {
         if (GeneralFunctions::get_request_method() == 'OPTIONS') {
+            // Log Activity
+            MVC::log("* CORS Request: OPTIONS");
+
+            // Set Headers
             header('Access-Control-Allow-Origin: *');
             header('Access-Control-Allow-Headers: X-Requested-With');
             header('Access-Control-Allow-Methods: GET,POST');
+
+            // Set Status Code
             http_response_code(200);
             print "OK";
-            exit;
+
+            // Log Activity
+            MVC::log(" - Set headers and responded with 200 OK");
+
+            // Done
+            die();
         }
     }
 }
